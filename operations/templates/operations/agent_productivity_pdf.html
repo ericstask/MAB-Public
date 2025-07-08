@@ -1,0 +1,59 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>PDF Report</title>
+        <style>
+            @page {
+                size: A4 landscape;
+                margin: 0.5in;
+            }
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 8px;
+            }
+            .table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 20px;
+            }
+            .table th, .table td {
+                border: 1px solid black;
+                padding: 8px;
+                text-align: left;
+            }
+            .table th {
+                background: #9CAFCC;
+                color: #000000;
+            }
+        </style>
+    </head>
+    <body>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                {% for column in columns %}
+                    <th>{{ column }}</th>
+                {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in data %}
+                <tr>
+                {% for column in columns %}
+                    <td>
+                    {% if column in percentage_columns %}
+                        {{ row|get:column|to_percentage }}
+                    {% else %}
+                        {{ row|get:column }}
+                    {% endif %}
+                    </td>
+                {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </body>
+</html>

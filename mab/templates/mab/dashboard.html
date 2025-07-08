@@ -1,0 +1,72 @@
+{% extends 'mab/base.html' %}
+{% load bootstrap4 %}
+
+{% block content %}
+
+<div class="container mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+
+            {% if messages %}
+                <ul style="list-style-type: none">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success">
+                                <li>{{ message }}</li>
+                            </div>
+                        {% elif message.tags == 'info' %}
+                            <div class="alert alert-info">
+                                <li>{{ message }}</li>
+                            </div>
+                        {% elif message.tags == 'warning' %}
+                            <div class="alert alert-warning">
+                                <li>{{ message }}</li>
+                            </div>
+                        {% elif message.tags == 'error' %}
+                            <div class="alert alert-danger">
+                                <li>{{ message }}</li>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if links_in_dashboard %} 
+
+            <div class="col-12 text-center">
+                <h1 class="mx-auto">Dashboard</h1>
+            </div>
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in links_in_dashboard %}
+                        <tr>
+                            <td><a href="{{ entry.link.link }}">{{ entry.link.name }}</a></td>
+                            <td>{{ entry.link.description }}</td>
+                            <td>
+                                <a href="{% url 'remove_tool_from_dashboard' entry.link.name %}" style="color: black;  ">
+                                <span class="material-icons" title="Remove from Dashboard">remove_circle</span>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}   
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h3 class="mx-auto">You have not added anything to your dashboard.</h3>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

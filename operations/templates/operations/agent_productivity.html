@@ -1,0 +1,104 @@
+{% extends 'operations/op_base_templates/op_report_base.html' %}
+{% load bootstrap4 %}
+{% load custom_filters %}
+
+{% block report_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1 class="mx-auto">Agent Productivity Report</h1>
+        </div>
+    </div>
+
+    {% if last_upload %}
+        <p>Files last uploaded on {{ last_upload }}</p>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+
+    <div class="container mt-2 mb-2">
+        <a class="btn btn-secondary me-2" href="{% url 'operations:agent_productivity_create_excel_file' %}" >Create Excel File</button>
+        <a class="btn btn-secondary me-2" href="{% url 'operations:agent_productivity_create_pdf_file' %}" style="float:right">Create PDF File</a>
+    </div>
+
+    <div id="app">
+        <div v-if="json_is_blank" class="pb-2">
+            <h3 class="text-center">Upload a Dial Connection files to create a report</h3>
+        </div>
+
+        <div v-else-if="loading" class="pb-2">
+            <h3 class="text-center">Loading...</h3>
+        </div>
+
+        <div v-else>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th v-for="(value, key) in data[0]" :key="key">[[ key ]]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(row, index) in data" :key="index">
+                            <td v-for="(value, key) in row" :key="key">[[ formatValue(value, key) ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock report_content %}
+
+{% block add_remove_button %}
+    {% include 'mab/tool_add_remove_buttons.html' with link_name='Agent Productivity Report' %}
+{% endblock add_remove_button %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+<script>
+    var app = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#app',
+        data: {
+            loading: true,
+            json_is_blank: false,
+            data: [],
+        },
+        mounted() {
+            fetch('{% url 'operations:agent_productivity_get_table_data' %}')
+                .then(response => response.json())
+                .then(json => {
+                    this.data = json;
+                    this.loading = false;
+                })
+                .catch(error => {
+                    this.json_is_blank = true;
+                    console.error('Error parsing JSON: ', error);
+                });
+        },
+        methods: {
+            formatValue(value, key) {
+                // Specify which keys should be formatted as percentages
+                percentageColumns = ['In Call (%)', 'Ready (%)', 'Wrapup (%)', 'Not Ready (%)', 'Conversion Rate',];
+
+                if (percentageColumns.includes(key)) {
+                    if (typeof value === 'number') {
+                        // Round to two decimal places if it's a decimal
+                        return (value * 100).toFixed(2) + '%';
+                    } else {
+                        return '-';
+                    }
+                }
+
+                return value                
+            },
+        }
+    });
+</script>
+{% endblock scripts %}

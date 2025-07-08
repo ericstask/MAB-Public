@@ -1,0 +1,61 @@
+{% extends 'mab/base.html' %}
+{% load bootstrap4 %}
+
+{% block content %}
+
+<div class="col-12 text-center">
+    <h1 class="mx-auto">Calls Per Week Audit</h1>
+</div>
+
+<div class="container mt-3">
+    {% if messages %}
+        <ul style="list-style-type: none">
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                    <div class="alert alert-success">
+                        <li>{{ message|linebreaksbr }}</li>
+                    </div>
+                {% elif message.tags == 'info' %}
+                    <div class="alert alert-info">
+                        <li>{{ message|linebreaksbr }}</li>
+                    </div>
+                {% elif message.tags == 'warning' %}
+                    <div class="alert alert-warning">
+                        <li>{{ message|linebreaksbr }}</li>
+                    </div>
+                {% elif message.tags == 'error' %}
+                    <div class="alert alert-danger">
+                        <li>{{ message|linebreaksbr }}</li>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-auto" style="background-color: #F2F2F2">
+
+                <form method="post">
+                    {% csrf_token %}
+                    <br>
+                    {% for audit in available_audits %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="selected_audits" value="{{ audit.id }}" checked>
+                            <label class="form-check-label" for="flexCheckDefault">
+                                {{ audit.get_client_display }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                    <br>
+                    <button type="submit" class="btn btn-primary">Run Selected Audits</button>
+                </form> 
+                
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock content %}

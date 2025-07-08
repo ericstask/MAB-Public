@@ -1,0 +1,134 @@
+{% extends 'operations/op_base_templates/op_report_base.html' %}
+{% load bootstrap4 %}
+{% load custom_filters %}
+
+{% block report_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1 class="mx-auto">Pay for Performance Report</h1>
+        </div>
+    </div>
+
+    {% if file_name %}
+        <p>Current file: {{ file_name }} uploaded on {{ uploaded_date }}</p>
+    {% else %}
+        <p>No File is currently on file. Upload one before creating a report.</p>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="file">Choose file</label>
+        <input type="file" name="file" id='file'>
+        <button class="btn btn-primary" type="submit">Upload</button>
+    </form>
+
+    <div class="container mt-5">
+        <form method="POST" class="form-inline">
+            {% csrf_token %}
+            <div class="form-group input-group form-row align-items-center">
+                <label class="me-2" for="dateInput">Ending Month</label>
+                <input type="month" class="form-control" id="dateInput" name="dateInput" value="{{ selected_date }}" required>
+                <button type="submit" class="btn btn-primary me-2">Submit</button>
+            </div>
+
+            <div class="container mt-5 mb-2">
+                <button type="submit" class="btn btn-secondary me-2" name="create_pfp_excel_file" value="True">Create Excel File</button>
+                <a class="btn btn-secondary me-2" href="{% url 'operations:pay_for_performance_add_remove' %}" style="float:right">Add/Remove Employees</a>
+            </div>
+        </form>
+    </div>
+
+    <div id="app">
+        <div v-if="json_is_blank" class="pb-2">
+            <h3 class="text-center">Upload a Paychex file to create a report</h3>
+        </div>
+
+        <div v-else-if="loading" class="pb-2">
+            <h3 class="text-center">Loading...</h3>
+        </div>
+
+        <div v-else>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th v-for="(value, key) in data[0]" :key="key">[[ key ]]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(row, index) in data" :key="index">
+                            <td v-for="(value, key) in row" :key="key">[[ formatValue(value) ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock report_content %}
+
+{% block add_remove_button %}
+    {% include 'mab/tool_add_remove_buttons.html' with link_name='Pay for Performance' %}
+{% endblock add_remove_button %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+
+        const monthInput = document.getElementById('dateInput');
+        monthInput.max = `${year}-${month}`;
+    });
+</script>
+
+<script>
+    var app = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#app',
+        data: {
+            loading: true,
+            json_is_blank: false,
+            data: [],
+        },
+        mounted() {
+            const dateInput = document.getElementById('dateInput').value;
+
+            fetch('{% url 'operations:pay_for_performance_get_table_data' %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-CSRFToken': "{{ csrf_token }}",
+                },
+                body: JSON.stringify({ dateInput: dateInput }),
+            })
+                .then(response => response.json())
+                .then(json => {
+                    this.data = json;
+                    this.loading = false;
+                })
+                .catch(error => {
+                    this.json_is_blank = true;
+                    console.error('Error parsing JSON: ', error);
+                });
+        },
+        methods: {
+            formatValue(value) {
+                // Check if value is a number
+                if (typeof value === 'number') {
+                    // Round to two decimal places if it's a decimal
+                    return value % 1 !== 0 ? value.toFixed(2) : value;
+                }
+
+                return value;
+            },
+        }
+    });
+</script>
+{% endblock scripts %}

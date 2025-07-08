@@ -1,0 +1,43 @@
+{% extends 'mab/base.html' %}
+{% load bootstrap4 %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            {% if messages %}
+                <ul style="list-style-type: none">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success">
+                                <li>{{ message|linebreaksbr }}</li>
+                            </div>
+                        {% elif message.tags == 'info' %}
+                            <div class="alert alert-info">
+                                <li>{{ message|linebreaksbr }}</li>
+                            </div>
+                        {% elif message.tags == 'warning' %}
+                            <div class="alert alert-warning">
+                                <li>{{ message|linebreaksbr }}</li>
+                            </div>
+                        {% elif message.tags == 'error' %}
+                            <div class="alert alert-danger">
+                                <li>{{ message|linebreaksbr }}</li>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if referring_url %}
+                <div class="row">
+                    <div class="col-12 text-center mt-3">
+                        <a class="btn btn-secondary" href="{{ referring_url }}">Return to previous page</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

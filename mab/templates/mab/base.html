@@ -1,0 +1,72 @@
+{% load static %}
+{% load bootstrap4 %}
+<html>
+    <head>
+        <title>MAB KPI Web</title>
+        <link rel="stylesheet" href="{% static 'mab/bootstrap/css/bootstrap.min.css' %}">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+              rel="stylesheet">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=mail" />
+
+        {% block head %}
+        {% endblock head %}
+    </head>
+
+    <body style="background-color: #FFFFFF; margin-bottom: 20px;">
+        <nav class="navbar navbar-expand-sm navbar-dark" style="background-color: #0251A7;">
+            <div class="container-fluid">
+
+                <a class="navbar-brand" href="#">
+                    <img src="{% static 'mab/images/logo.gif' %}" alt="Logo" style="border: 3px solid white;">
+                </a>
+
+                {% if user.is_authenticated %}
+                    <ul class="navbar-nav">
+
+                        {% if user.is_superuser %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                        </li>
+                        {% if perms.clientrelations.access_client_relations %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'clientrelations:general_tools' %}">Client Relations</a>
+                        </li>
+                        {% endif %}
+                        {% if perms.operations.access_operations %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'operations:reports' %}">Operations</a>
+                        </li>
+                        {% endif %}
+                        {% if perms.riskmanagement.access_risk_management %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'riskmanagement:overview' %}">Risk Management</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    <div class="ml-auto">
+                        <a href="{% url 'logout' %}" class="btn btn-primary">logout</a>
+                    </div>
+                {% else %}
+                    <div class="ml-auto">
+                        <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+                    </div>
+                {% endif %}
+                
+            </div>
+        </nav>
+
+        <div class="container pt-3">
+            {% block content %}
+            {% endblock content %}
+        <div>
+
+        <script src="{% static 'mab/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+        {% block scripts %}
+
+        {% endblock %}
+    </body> 
+</html>

@@ -1,0 +1,25 @@
+{% extends 'operations/op_base_templates/op_base.html' %}
+{% load bootstrap4 %}
+
+{% block index_content %}
+<div class="container">
+    <div class="row">
+        <h2 class="mt-3 text-center">Reports</h2>
+        <div class="col-sm-4">
+            <div class="list-group mt-3 mb-3">
+                <a href="{% url 'operations:pay_for_performance' %}" class="list-group-item list-group-item-action">Pay for Peformance</a>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="list-group mt-3 mb-3">
+                <a href="{% url 'operations:agent_productivity' %}" class="list-group-item list-group-item-action">Agent Productivity</a>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="list-group mt-3 mb-3">
+                <a href="{% url 'operations:collector_goal_summary' %}" class="list-group-item list-group-item-action">Collector Goal Summary</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock index_content %}

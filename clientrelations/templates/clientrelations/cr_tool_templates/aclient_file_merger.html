@@ -1,0 +1,27 @@
+{% extends 'clientrelations/cr_base_templates/cr_tool_base.html' %}
+{% load bootstrap4 %} 
+
+{% block tool_content %}
+
+<div class="row">
+    <div class="col-12 text-center">
+        <h1 class="mx-auto">AClient File Merger</h1>
+    </div>
+</div>
+<p>Search the \\nas4\client\newbiz\AClient\remit\ folder for text files that start with "ACL" and merge them into a single excel file.</p>
+
+<div class="row">
+    <div class="col-12 text-center mt-3">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="button_pressed" value="true">
+            <button type="submit" class="btn btn-primary">Merge Files</button>
+        </form>
+    </div>
+</div>
+
+{% endblock tool_content %}
+
+{% block add_remove_button %}
+    {% include 'mab/tool_add_remove_buttons.html' with link_name='AClient File Merger' %}
+{% endblock add_remove_button %}

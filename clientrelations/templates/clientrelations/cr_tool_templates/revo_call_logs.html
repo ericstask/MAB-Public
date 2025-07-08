@@ -1,0 +1,29 @@
+{% extends 'clientrelations/cr_base_templates/cr_tool_base.html' %}
+{% load bootstrap4 %} 
+
+{% block tool_content %}
+
+<div class="row">
+    <div class="col-12 text-center">
+        <h1 class="mx-auto">Sectional Call Log</h1>
+    </div>
+</div>
+<p>This creates the Sectional Call Log by searching the \\nas4\client\newbiz\Sectional\call_report for files 
+    that start with "Sectional_CALL" and using the data in them to create a Excel file. 
+</p>
+
+<div class="row">
+    <div class="col-12 text-center mt-3">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="button_pressed" value="true">
+            <button type="submit" class="btn btn-primary">Create Call Log</button>
+        </form>
+    </div>
+</div>
+
+{% endblock tool_content %}
+
+{% block add_remove_button %}
+    {% include 'mab/tool_add_remove_buttons.html' with link_name='Sectional Call Log' %}
+{% endblock add_remove_button %}

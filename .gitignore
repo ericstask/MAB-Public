@@ -1,0 +1,26 @@
+# .gitignore
+
+# Django
+/media/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+.DS_Store
+
+# Virtual Enviorment
+venv/
+pip-log.txt
+
+# Enviromental variables
+.env
+
+# Local development settings
+settings_local.py
+
+# Vue folder
+vue/node_modules/
+vue/dist/
+vue/package-lock.json
+vue/webpack-stats.json

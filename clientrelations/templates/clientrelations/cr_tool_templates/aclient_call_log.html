@@ -1,0 +1,37 @@
+{% extends 'clientrelations/cr_base_templates/cr_tool_base.html' %}
+{% load bootstrap4 %} 
+
+{% block tool_content %}
+
+<div class="row">
+    <div class="col-12 text-center">
+        <h1 class="mx-auto">AClient Call Log</h1>
+    </div>
+</div>
+<p>Create the AClient Monthly and Quarterly call logs by searching the \\nas4\client\newbiz\AClient\call_report\
+    folder for files that start with "AClient_call_" and retriveing the data from them.
+</p>
+
+<div class="row">
+    <div class="col-12 text-center mt-3">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="period">Choose Report Period:
+                <select class="form-control" id="period" name="period">
+                    <option value="Monthly">Monthly</option>
+                    <option value="Quarterly">Quarterly</option>
+                </select></label>
+            </div>
+            <br>
+            <input type="hidden" name="button_pressed" value="true">
+            <button type="submit" class="btn btn-primary">Create Call Log</button>
+        </form>
+    </div>
+</div>
+
+{% endblock tool_content %}
+
+{% block add_remove_button %}
+    {% include 'mab/tool_add_remove_buttons.html' with link_name='AClient Call Log' %}
+{% endblock add_remove_button %}

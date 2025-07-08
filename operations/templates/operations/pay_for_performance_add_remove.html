@@ -1,0 +1,152 @@
+{% extends 'operations/op_base_templates/op_report_base.html' %}
+{% load bootstrap4 %}
+{% load custom_filters %}
+
+{% block report_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1 class="mx-auto">Pay for Performance Report</h1>
+            <h2 class="mx-auto">Add/Remove Employees</h2>
+        </div>
+    </div>
+
+    <div class="row">
+    <div class="d-flex mb-2">
+        <a href="{% url 'operations:pay_for_performance' %}" class="btn btn-secondary" style="float:right">Back to Report</a>
+    </div>
+    </div>
+
+    <form method="POST" id="add_remove_form" autocomplete="off">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="form-group col">
+                {{ form.id.label_tag }}
+                {{ form.id }}
+            </div>
+            <div class="form-group col">
+                {{ form.last_name_and_suffix.label_tag }}
+                {{ form.last_name_and_suffix }}
+            </div>
+            <div class="form-group col">
+                {{ form.first_name.label_tag }}
+                {{ form.first_name }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col">
+                {{ form.most_recent_hire_date.label_tag }}
+                {{ form.most_recent_hire_date }}
+            </div>
+            <div class="form-group col">
+                {{ form.supervisor.label_tag }}
+                {{ form.supervisor }}
+            </div>
+            <div class="form-group col">
+                {{ form.pay_rate.label_tag }}
+                {{ form.pay_rate }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form.action.label_tag }}
+            {{ form.action }}
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-2">Submit</button>
+    </form>
+
+    <h3>Added Employees</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name and Suffix</th>
+                <th>Supervisor</th>
+                <th>Most Recent Hire Date</th>
+                <th>Pay Rate</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in added_employees %}
+            <tr>
+                <td>{{ employee.id }}</td>
+                <td>{{ employee.first_name }}</td>
+                <td>{{ employee.last_name_and_suffix }}</td>
+                <td>{{ employee.supervisor }}</td>
+                <td>{{ employee.most_recent_hire_date }}</td>
+                <td>{{ employee.pay_rate }}</td>
+                <td>
+                    <a href="{% url 'operations:pay_for_performance_delete' employee.id %}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Removed Employees</h3>
+    <table e class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name and Suffix</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in removed_employees %}
+            <tr>
+                <td>{{ employee.id }}</td>
+                <td>{{ employee.first_name }}</td>
+                <td>{{ employee.last_name_and_suffix }}</td>
+                <td>
+                    <a href="{% url 'operations:pay_for_performance_delete' employee.id %}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock report_content %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const actionRadio = document.getElementsByName('action');
+        const supervisorNameField = document.getElementById('id_supervisor');
+        const hireDateNameField = document.getElementById('id_most_recent_hire_date');
+        const payRateNameField = document.getElementById('id_pay_rate');
+        const form = document.getElementById('add_remove_form')
+
+        function toggleRequired() {
+            const selectedAction = document.querySelector('input[name="action"]:checked').value;
+
+            if (selectedAction === 'add') {
+                supervisorNameField.required = true;
+                hireDateNameField.required = true;
+                payRateNameField.required = true;
+            } else {
+                supervisorNameField.required = false;
+                hireDateNameField.required = false;
+                payRateNameField.required = false;
+            } 
+        }
+
+        // Set initial state based on default radio button selection 
+        toggleRequired();
+
+        // Listen for changes on radio button
+        actionRadio.forEach(radio => {
+            radio.addEventListener('change', toggleRequired);
+        });
+    })
+</script>
+{% endblock scripts %}
+
+
+
+

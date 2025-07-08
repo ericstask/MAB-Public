@@ -1,0 +1,28 @@
+{% extends 'clientrelations/cr_base_templates/cr_tool_base.html' %}
+{% load bootstrap4 %} 
+
+{% block tool_content %}
+
+<div class="row">
+    <div class="col-12 text-center">
+        <h1 class="mx-auto">Revo Weekly Invoice</h1>
+    </div>
+</div>
+<p>Create the Weekly invoices for Revo. Searches for the remit files in the "\\nas4\client\newbiz\Revo\remit\Weekly remit recap" folder
+    and generates each excel file with the data.</p>
+
+<div class="row">
+    <div class="col-12 text-center mt-3">
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="button_pressed" value="true">
+            <button type="submit" class="btn btn-primary">Create Invoices</button>
+        </form>
+    </div>
+</div>
+
+{% endblock tool_content %}
+
+{% block add_remove_button %}
+    {% include 'mab/tool_add_remove_buttons.html' with link_name='Revo Weekly Invoice' %}
+{% endblock add_remove_button %}

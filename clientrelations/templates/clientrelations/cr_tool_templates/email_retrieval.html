@@ -1,0 +1,241 @@
+{% extends 'operations/op_base_templates/op_report_base.html' %}
+{% load bootstrap4 %}
+{% load custom_filters %}
+
+{% block report_content %}
+<div class="container pb-1">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1 class="mx-auto">Email Search</h1>
+        </div>
+    </div>
+
+    <div id="app">
+        <form method="POST" class="form-inline" @submit.prevent="submitForm()">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col">
+                    <label class="me-2" for='refnum'>Reference #</label>
+                    <input type="text" class="form-control" id="refnum" name="refnum" v-model="refnum" maxlength="8" autocomplete="off">
+                </div>
+                <div class="col">
+                    <label class="me-2" for='client'>Client</label>
+                    <select class="form-control" id="client" name="client" v-model="client">
+                        <option value="" selected>All Clients</option>
+                        <option value="ABank">ABank</option>
+                        <option value="EnergyComp">EnergyComp</option>
+                        <option value="InsuranceComp">InsuranceComp</option>
+                        <option value="MoreEnergy">MoreEnergy</option>
+                        <option value="PARKS">PARKS</option>
+                        <option value="Chips">Chips (SpotLoan)</option>
+                        <option value="ALF">ALF/Finwise/LTO</option>
+                        <option value="PURE">PURE</option>
+                    </select>
+                </div>
+            </div>
+    
+            <div class="row">
+                <div class="col">
+                    <label class="me-2" for="startDate">Start Date</label>
+                    <input type="date" class="form-control" id="startDate" name="startDate" v-model="startDate">
+                </div>
+                <div class="col">
+                    <label class="me-2" for="endDate">End Date</label>
+                    <input type="date" class="form-control" id="endDate" name="endDate" v-model="endDate">
+                </div>
+            </div>
+    
+            <label class="me-2" for='recieverName'>Name</label>
+            <input type="text" class="form-control" id="recieverName" name="recieverName" v-model="recieverName" maxlength="50" autocomplete="off">
+            
+            <div class="container mt-5 mb-2">
+                <button class="btn btn-primary mt-2" type="submit">Submit</button>
+                <a class="btn btn-secondary me-2" href="{% url 'clientrelations:email_bulk_retrieval' %}" style="float:right">Bulk Retrieval</a>
+            </div>
+        </form>
+
+        <div v-if="loading" class="pb-3">
+            <h3 class="text-center">Loading...</h3>
+        </div>
+
+        <div v-if="data">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>View</th>
+                            <th>Reference #</th>
+                            <th>Email Date</th>
+                            <th>Recipient</th>
+                            <th>Subject</th>
+                            <th>Client</th>
+                        </tr>
+                    </thead>
+                    <tbody>                    
+                        <tr v-for="(letter, index) in data" :key="index">
+                            <td>
+                                <a :href="`${baseUrlHTML}${letter.ReceivedEmailID}`" class="btn btn-light" target="_blank">
+                                    <span class="material-icons">pageview</span>
+                                </a>
+                                <a :href="`${baseUrlEml}${letter.ReceivedEmailID}`" class="btn btn-light" target="_blank">
+                                    <span class="material-symbols-outlined">mail</span>
+                                </a>
+                            </td>
+                            <td>[[ letter.ReferenceNumber ]]</td>
+                            <td class="text-nowrap">[[ formatDate(letter.EmailDate) ]]</td>
+                            <td>[[ letter.EmailTo ]]</td>
+                            <td>[[ letter.EmailSubject ]]</td>
+                            <td>[[ letter.EmailBcc ]]</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+
+            <ul class="pagination justify-content-center">
+                <li :class="['page-item', { disabled: currentPage === 1 }]" @click="currentPage > 1 && changePage(currentPage - 1)">
+                    <a class="page-link">Previous</a>
+                </li>
+
+                <li v-for="page in visiblePages" :key="page" :class="['page-item', { active: page === currentPage }]" @click="page !== currentPage && changePage(page)">
+                    <a class="page-link">[[ page ]]</a>
+                </li>
+
+                <li :class="['page-item', { disabled: currentPage === totalPages }]" @click="currentPage < totalPages && changePage(currentPage + 1)">
+                    <a class="page-link">Next</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+{% endblock report_content %}
+
+{% block add_remove_button %}
+    {% include 'mab/tool_add_remove_buttons.html' with link_name='Email Search' %}
+{% endblock add_remove_button %}
+
+{% block scripts %}
+{% comment %} <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script> {% endcomment %}
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16"></script>
+
+<script>
+    var app = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#app',
+        data: {
+            loading: false,
+            baseUrlHTML: "/clientrelations/email_retrieval/html/",
+            baseUrlEml: "/clientrelations/email_retrieval/eml/",
+            refnum: null,
+            client: null,
+            startDate: null,
+            endDate: null,
+            recieverName: null,
+            data: null,
+            currentPage: 1,
+            itemsPerPage: 25,
+            totalItems: 0,
+            maxVisiblePages: 21,
+        },
+        computed: {
+            totalPages() {
+                return Math.ceil(this.totalItems / this.itemsPerPage)
+            },
+            visiblePages() {
+                const half = Math.floor(this.maxVisiblePages / 2);
+                let start = Math.max(1, this.currentPage - half);
+                let end = Math.min(this.totalPages, this.currentPage + half);
+
+                // Adjust if we're near the start or end
+                if (this.currentPage <= half) {
+                    end = Math.min(this.totalPages, start + this.maxVisiblePages - 1);
+                } else if (this.currentPage + half >= this.totalPages) {
+                    start = Math.max(1, this.totalPages - this.maxVisiblePages + 1)
+                }
+
+                return Array.from({ length: end - start + 1 }, (_, i) => i + start);
+            },
+        },
+        methods: {
+            formatDate(value) {
+                const date = new Date(value);
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                });
+            },
+            submitForm() {
+                this.currentPage = 1;
+                this.submitLetterQuery();
+            },
+            changePage(page) {
+                this.currentPage = page;
+                this.submitLetterQuery();
+            },
+            submitLetterQuery() {
+                if (this.recieverName && (!this.startDate || !this.endDate)) {
+                    alert("Please provide both Start Date and End Date when suing the Name field.");
+                    this.loading = false;
+                    return;
+                }
+
+                // Reset state
+                this.totalItems = 0;
+                this.data = null;
+                this.loading = true;
+
+                fetch('{% url 'clientrelations:email_search' %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({ 
+                        refnum: this.refnum,
+                        client: this.client,
+                        startDate: this.startDate,
+                        endDate: this.endDate,
+                        recieverName: this.recieverName,
+                        page: this.currentPage,
+                        limit: this.itemsPerPage
+                     }),
+                })
+                .then(response => response.json())
+                .then(json => {
+                    const taskId = json.task_id
+                    this.pollTask(taskId)
+                })
+                .catch(error => {
+                    console.error('Error: ', error);
+                    this.loading = false;
+                });
+                
+            },
+
+            pollTask(taskId) {
+                // Poll the status endpoint every few seconds
+                const pollInterval = setInterval(() => {
+                    fetch(`/clientrelations/email_retrieval/search_status/${taskId}/`)
+                    .then(response => response.json())
+                    .then(json => {
+                        if (json.status !== 'PENDING') {
+                            this.data = json.results;
+                            this.totalItems = json.total;
+                            this.loading = false;
+                            clearInterval(pollInterval);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Polling error:", error);
+                        clearInterval(pollInterval);
+                        this.loading = false;
+                    });
+                }, 3000);  // poll every 3 seconds
+            }
+        }
+    });
+</script>
+
+{% endblock scripts %}

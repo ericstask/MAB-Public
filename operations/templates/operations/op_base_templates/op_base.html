@@ -1,0 +1,29 @@
+{% extends 'mab/base.html' %}
+{% load bootstrap4 %}
+
+{% block content %}
+<div class="col-12 text-center">
+    <h1 class="mx-auto">Operations</h1>
+</div>
+
+<div class="container mt-3">
+    <ul class="nav nav-tabs nav-fill">
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == '/operations/reports' %}active{% endif %}" 
+                style="{% if request.path == '/operations/reports' %}background-color: #F2F2F2; border-color: #F2F2F2{% endif %}"
+                href="{% url 'operations:reports' %}">Reports</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.path == '/operations/tools' %}active{% endif %}" 
+                style="{% if request.path == '/operations/tools' %}background-color: #F2F2F2; border-color: #F2F2F2{% endif %}"
+                href="{% url 'operations:tools' %}">Tools</a>
+        </li>
+    </ul>
+    <div style="background-color: #F2F2F2">
+        {% block index_content %}
+            
+        {% endblock index_content %}
+    </div>
+<div>
+    
+{% endblock content %}

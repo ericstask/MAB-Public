@@ -1,0 +1,107 @@
+{% extends 'operations/op_base_templates/op_report_base.html' %}
+{% load bootstrap4 %}
+{% load custom_filters %}
+
+{% block report_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1 class="mx-auto">Collector Goal Summary Report</h1>
+        </div>
+    </div>
+
+    <div id="app">
+        <form form @submit.prevent="get_collector_goal_summary_data" class="mt-3 mb-3">
+            {% csrf_token %}
+            <div class="form-group input-group form-row align-items-center">
+                <label class="me-2" for="dateInput">Date</label>
+                <input type="date" class="form-control" id="dateInput" name="dateInput" v-model="date_input" required>
+                <button type="submit" class="btn btn-primary me-2">Submit</button>
+            </div>
+        </form>
+
+        <div v-if="loading" class="pb-3">
+            <h3 class="text-center">Loading...</h3>
+        </div>
+        <div v-else>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th v-for="(value, key) in data[0]" :key="key">[[ key ]]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(row, index) in data" :key="index">
+                            <td v-for="(value, key) in row" :key="key">[[ formatValue(value) ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock report_content %}
+
+{% block add_remove_button %}
+    {% include 'mab/tool_add_remove_buttons.html' with link_name='Collector Goal Summary' %}
+{% endblock add_remove_button %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+<script>
+    var app = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#app',
+        data: {
+            loading: true,
+            date_input: "{{ selected_date }}",
+            data: [],
+        },
+        mounted() {
+            fetch('{% url 'operations:collector_goal_summary_get_table_data' %}')
+                .then(response => response.json())
+                .then(json => {
+                    this.data = json;
+                    this.loading = false;
+                })
+                .catch(error => {
+                    console.error('Error parsing JSON: ', error);
+                });
+        },
+        methods: {
+            formatValue(value) {
+                // Check if value is a number
+                if (typeof value === 'number') {
+                    // Round to two decimal places if it's a decimal
+                    return value % 1 !== 0 ? value.toFixed(2) : value;
+                }
+
+                return value;
+            },
+            get_collector_goal_summary_data() {
+                this.loading = true;
+
+                fetch('{% url 'operations:collector_goal_summary_get_table_data' %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({ dateInput: this.date_input }),
+                })
+                .then(response => response.json())
+                .then(json => {
+                    this.data = json;
+                    this.loading = false;
+                })
+                .catch(error => {
+                    console.error('Error parsing JSON: ', error);
+                });
+            }
+        }
+    });
+</script>
+{% endblock scripts %}

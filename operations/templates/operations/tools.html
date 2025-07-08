@@ -1,0 +1,25 @@
+{% extends 'operations/op_base_templates/op_base.html' %}
+{% load bootstrap4 %}
+
+{% block index_content %}
+<div class="container">
+    <div class="row">
+        <h2 class="mt-3 text-center">Tools</h2>
+        {% comment %} <div class="col-sm-4">
+            <div class="list-group mt-3 mb-3">
+                <a href="{% url 'operations:letter_retrieval' %}" class="list-group-item list-group-item-action">Letter Search</a>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="list-group mt-3 mb-3">
+                <a href="{% url 'operations:agent_productivity' %}" class="list-group-item list-group-item-action">Agent Productivity</a>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="list-group mt-3 mb-3">
+                <a href="{% url 'operations:collector_goal_summary' %}" class="list-group-item list-group-item-action">Collector Goal Summary</a>
+            </div>
+        </div>  {% endcomment %}
+    </div>
+</div>
+{% endblock index_content %}

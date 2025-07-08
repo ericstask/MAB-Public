@@ -1,0 +1,44 @@
+{% extends 'mab/base.html' %}
+{% load bootstrap4 %}
+{% load custom_filters %}
+
+{% block content %}
+
+<div class="col-12 text-center">
+    {% if editing %}
+        <h1 class="mx-auto">Edit Audit</h1>
+    {% else %}
+        <h1 class="mx-auto">Create New Audit</h1>
+    {% endif %}
+</div>
+
+<div class="container mt-3">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6" style="background-color: #F2F2F2">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3 mt-3">
+                        <label for="{{ audit_form.audit_type.id }}" class="form-label">Audit Type:</label>
+                        {{ audit_form.audit_type | add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ audit_form.client.id }}" class="form-label">Client:</label>
+                        {{ audit_form.client | add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ audit_form.start_date.id }}" class="form-label">Start Date:</label>
+                        {{ audit_form.start_date | add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ audit_form.due_date.id }}" class="form-label">Due Date:</label>
+                        {{ audit_form.due_date | add_class:"form-control" }}
+                    </div>
+                    <button type="sumbit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

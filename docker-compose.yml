@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  web: 
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - ./.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.development
+    ports:
+      - 8000:8000
+    privileged: true
+    volumes:
+      - .:/mab
+      - C:/Users/qzt3b8/AppData/Local/Programs/Python/Python311:/mnt/python # this will need to be updated on the production server
+      - C:/Users/qzt3b8/Documents/Scripts:/mnt/test
+      - newbiz:/mnt/newbiz
+      - clientrelations:/mnt/clientrelations
+    depends_on:
+      - db
+      - redis
+      
+  db:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - PGTZ=America/New_York
+
+  redis:
+    image: redis:7
+
+  celery:
+    build: .
+    command: celery -A config.settings worker -l info
+    volumes: 
+      - .:/mab
+    env_file:
+      - ./.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.development
+    depends_on:
+      - db
+      - redis
+      - web
+
+volumes:
+  newbiz:
+    external: true
+  clientrelations:
+    external: true
+    

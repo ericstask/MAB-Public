@@ -1,0 +1,27 @@
+{% extends 'mab/base.html' %}
+{% load bootstrap4 %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            {% comment %} <h1>Log In</h1> {% endcomment %}
+            {% if error_message %}
+            <div class="alert alert-danger">{{ error_message }}</div>
+            {% endif %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username"  autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your username"  autocomplete="off">
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 5px;">Log In</button>    
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

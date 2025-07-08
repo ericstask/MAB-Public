@@ -1,0 +1,20 @@
+{% extends 'clientrelations/cr_base_templates/cr_base.html' %}
+{% load bootstrap4 %}
+
+{% block index_content %}
+<div class="container">
+    <div class="row">
+        <h2 class="mt-3 text-center">Other Tools</h2>
+        <div class="col-sm-4">
+            <div class="list-group mt-3 mb-3">
+                <a href="{% url 'clientrelations:revo_weekly_invoice' %}" class="list-group-item list-group-item-action">Revo Weekly Invoice</a>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="list-group mt-3 mb-3">
+                <a href="{% url 'clientrelations:sectional_call_logs' %}" class="list-group-item list-group-item-action">Sectional Call Log</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock index_content %}

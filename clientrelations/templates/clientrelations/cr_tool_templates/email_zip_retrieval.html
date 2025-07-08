@@ -1,0 +1,146 @@
+{% extends 'operations/op_base_templates/op_report_base.html' %}
+{% load bootstrap4 %}
+{% load custom_filters %}
+
+{% block report_content %}
+<div class="container pb-1">
+    <div class="row">
+        <div class="col-12 text-center">
+            <h1 class="mx-auto">Email Bulk Retrieval</h1>
+        </div>
+    </div>
+
+    <div id="app">
+        <form method="POST" class="form-inline" @submit.prevent="submitForm">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col">
+                    <label class="me-2" for='client'>Client</label>
+                    <select class="form-control" id="client" name="client" v-model="client">
+                        <option value="ABank" selected>ABank</option>
+                        <option value="EnergyComp">EnergyComp</option>
+                        <option value="InsuranceComp">InsuranceComp</option>
+                        <option value="MoreEnergy">MoreEnergy</option>
+                        <option value="PARKS">PARKS</option>
+                        <option value="Chips">Chips (SpotLoan)</option>
+                        <option value="ALF">ALF/Finwise/LTO</option>
+                        <option value="PURE">PURE</option>
+                    </select>
+                </div>
+
+                <div class="col">
+                    <label class="me-2" for="emailDate">Date</label>
+                    <input type="date" class="form-control" id="emailDate" name="emailDate" v-model="emailDate">
+                </div>
+            </div>
+            
+            <div class="container mt-5 mb-2">
+                <button class="btn btn-primary mt-2" type="submit">Submit</button>
+                <a class="btn btn-secondary me-2" href="{% url 'clientrelations:email_retrieval' %}" style="float:right">Back</a>
+            </div>
+        </form>
+
+        <p v-if="statusMessage" class="pb-2">
+            [[ statusMessage ]]
+        </p>
+
+        <a v-if="downloadUrl" :href="downloadUrl" download="emails.zip" class="btn btn-primary mb-2">
+            Download Zip File
+        </a>
+    </div>
+
+</div>
+{% endblock report_content %}
+
+{% block add_remove_button %}
+    {% include 'mab/tool_add_remove_buttons.html' with link_name='Email Search' %}
+{% endblock add_remove_button %}
+
+{% block scripts %}
+{% comment %} <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script> {% endcomment %}
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16"></script>
+
+<script>
+    var app = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#app',
+        data: {
+            client: '',
+            emailDate: '',
+            statusMessage: '',
+            taskId: '',
+            downloadUrl: '',
+            loading: false,
+            pollInterval: null,
+        },
+        methods: {
+            async submitForm() {
+                this.loading = true;
+                this.statusMessage = 'Submitting request...';
+                this.downloadUrl = '';
+                try {
+                    const response = await fetch('{% url 'clientrelations:start_email_zip' %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}',
+                        },
+                        body: JSON.stringify({ 
+                            client: this.client,
+                            email_date: this.emailDate,
+                         }),
+                    })
+                    const data = await response.json();
+                    this.taskId = data.task_id;
+                    this.statusMessage = "Processing request...";
+
+                    this.pollInterval = setInterval(this.pollStatus, 2000);
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    this.statusMessage = 'Submission failed.';
+                }
+            },
+            async pollStatus() {
+                try {
+                    const res = await fetch(`/clientrelations/email_retrieval/email_zip_status/${this.taskId}/`);
+                    const data = await res.json();
+
+                    if (data.status === 'pending') return;
+
+                    clearInterval(this.pollInterval);
+
+                    if (data.status === 'complete') {
+                        const blob = this.base64ToBlob(data.zip_data, 'application/zip');
+                        this.downloadUrl = URL.createObjectURL(blob)
+                        this.statusMessage = 'Emails ready for download:';
+
+                    } else {
+                        this.statusMessage = data.message || 'An error occurred retrieving the emails.';
+                    }
+
+                    this.loading = false;
+
+                } catch (error) {
+                    clearInterval(this.pollInterval);
+                    this.statusMessage = 'Error polling task status.';
+                    this.loading = false;
+                }
+            },
+            base64ToBlob(base64, mime) {
+                const byteChars = atob(base64);
+                const byteArrays = [];
+                for (let offset = 0; offset < byteChars.length; offset += 512) {
+                    const slice = byteChars.slice(offset, offset + 512);
+                    const byteNumbers = new Array(slice.length);
+                    for (let i = 0; i < slice.length; i++) {
+                        byteNumbers[i] = slice.charCodeAt(i);
+                    }
+                    byteArrays.push(new Uint8Array(byteNumbers));
+                }
+                return new Blob(byteArrays, { type: mime });
+            },
+        }
+    });
+</script>
+
+{% endblock scripts %}
